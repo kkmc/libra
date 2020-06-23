@@ -713,6 +713,10 @@ impl<'env> ModuleTranslator<'env> {
                 args
             )
         }
+
+        // Check the post conditions for smoke testing
+        spec_translator.assert_postconditions();
+
         self.writer.unindent();
         emitln!(self.writer, "}");
         emitln!(self.writer);
