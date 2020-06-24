@@ -535,6 +535,7 @@ impl<'env> ModuleTranslator<'env> {
         // verification.
         self.generate_function_sig(func_target, false); // no inline
         self.generate_function_args_requires_well_formed(func_target);
+        self.generate_function_ensures(func_target);
         self.generate_verify_function_body(func_target); // function body just calls inlined version
     }
 
@@ -618,6 +619,14 @@ impl<'env> ModuleTranslator<'env> {
             );
             emit!(self.writer, &type_check);
         }
+    }
+
+    /// Generate postconditions for the top level function
+    fn generate_function_ensures(&self, func_target: &FunctionTarget<'_>) {
+        // Add the post conditions for smoke testing
+        let spec_translator =
+            SpecTranslator::new(self.writer, func_target.clone(), self.options, true);
+        spec_translator.ensure_smoke_test_postconditions();
     }
 
     /// Emit code for the function specification.
@@ -713,9 +722,6 @@ impl<'env> ModuleTranslator<'env> {
                 args
             )
         }
-
-        // Check the post conditions for smoke testing
-        spec_translator.assert_postconditions();
 
         self.writer.unindent();
         emitln!(self.writer, "}");

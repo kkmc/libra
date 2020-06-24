@@ -152,13 +152,14 @@ impl<'env> BoogieWrapper<'env> {
         }
 
         // Add errors for functions with smoke tests
-        self.add_negative_errors(negative_cond_errors);
+        self.add_negative_errors(negative_cond_errors.clone());
+        // self.add_all_negative_errors(negative_cond_errors);
 
         Ok(())
     }
 
     /// Determine whether the boogie error represents the failure of a negative condition
-    /// and return its location of so.
+    /// and return its location if so.
     fn try_get_negative_error(&self, error: &BoogieError) -> Option<Loc> {
         // Find the source location of the error
         let (_, loc_opt) = self.get_locations(error.position);
@@ -194,6 +195,30 @@ impl<'env> BoogieWrapper<'env> {
             self.env.add_diag(diag);
         });
     }
+
+    // /// Report errors which were expected to raise at least one error of its kind,
+    // /// but all passed instead.
+    // fn add_all_negative_errors(&self, negative_cond_errors: BTreeSet<Loc>) {
+    //     // Mark the reported errors
+    //     let mut reported: BTreeSet<Loc> = BTreeSet::new();
+    //     self.env.with_condition_infos(|loc, info| {
+    //         if !info.negative_cond || negative_cond_errors.contains(loc) {
+    //             // Not a negative condition, or expected error happened.
+    //             return;
+    //         }
+    //         // If this error did not happen for all functions, report it
+    //         if !reported.contains(loc) {
+    //             reported.insert(loc.clone());
+    //             // Expected error did not happen, report it.
+    //             let diag = Diagnostic::new(
+    //                 Severity::Error,
+    //                 info.message.clone(),
+    //                 Label::new(loc.file_id(), loc.span(), ""),
+    //             );
+    //             self.env.add_diag(diag);
+    //         }
+    //     });
+    // }
 
     /// Helper to add a boogie error as a codespan Diagnostic.
     fn add_error(&self, error: &BoogieError) {
