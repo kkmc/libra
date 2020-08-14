@@ -1,64 +1,72 @@
 Move prover returns: exiting with boogie verification errors
-error: subexpression is constant: Call(NodeId(12), Lt, [LocalVar(NodeId(10), Symbol(47)), Value(NodeId(11), Number(BigInt { sign: Plus, data: BigUint { data: [5] } }))]).
+error: subexpression is constant: Value(NodeId(17), Bool(true)).
 
-    ┌── tests/sources/functional/const_subexp_spec_check.move:38:9 ───
+    ┌── tests/sources/functional/const_subexp_spec_check.move:17:9 ───
     │
- 38 │         requires x < 5;
-    │         ^^^^^^^^^^^^^^^
-    │
-
-error: subexpression is constant: Call(NodeId(22), Not, [Call(NodeId(12), Lt, [LocalVar(NodeId(10), Symbol(47)), Value(NodeId(11), Number(BigInt { sign: Plus, data: BigUint { data: [5] } }))])]).
-
-    ┌── tests/sources/functional/const_subexp_spec_check.move:38:9 ───
-    │
- 38 │         requires x < 5;
-    │         ^^^^^^^^^^^^^^^
+ 17 │         requires true;
+    │         ^^^^^^^^^^^^^^
     │
 
-error: subexpression is constant: Call(NodeId(15), Gt, [LocalVar(NodeId(13), Symbol(47)), Value(NodeId(14), Number(BigInt { sign: Plus, data: BigUint { data: [3] } }))]).
+error: subexpression is constant: Value(NodeId(18), Bool(true)).
 
-    ┌── tests/sources/functional/const_subexp_spec_check.move:39:9 ───
+    ┌── tests/sources/functional/const_subexp_spec_check.move:18:9 ───
     │
- 39 │         requires x > 3;
-    │         ^^^^^^^^^^^^^^^
-    │
-
-error: subexpression is constant: Call(NodeId(23), Not, [Call(NodeId(15), Gt, [LocalVar(NodeId(13), Symbol(47)), Value(NodeId(14), Number(BigInt { sign: Plus, data: BigUint { data: [3] } }))])]).
-
-    ┌── tests/sources/functional/const_subexp_spec_check.move:39:9 ───
-    │
- 39 │         requires x > 3;
-    │         ^^^^^^^^^^^^^^^
+ 18 │         requires true ==> x < 5;
+    │         ^^^^^^^^^^^^^^^^^^^^^^^^
     │
 
-error: subexpression is constant: Call(NodeId(18), Neq, [LocalVar(NodeId(16), Symbol(47)), Value(NodeId(17), Number(BigInt { sign: Plus, data: BigUint { data: [4] } }))]).
+error: subexpression is constant: Call(NodeId(21), Lt, [LocalVar(NodeId(19), Symbol(47)), Value(NodeId(20), Number(BigInt { sign: Plus, data: BigUint { data: [5] } }))]).
 
-    ┌── tests/sources/functional/const_subexp_spec_check.move:40:9 ───
+    ┌── tests/sources/functional/const_subexp_spec_check.move:18:9 ───
     │
- 40 │         requires x != 4;    // assume false
+ 18 │         requires true ==> x < 5;
+    │         ^^^^^^^^^^^^^^^^^^^^^^^^
+    │
+
+error: subexpression is constant: Call(NodeId(22), Implies, [Value(NodeId(18), Bool(true)), Call(NodeId(21), Lt, [LocalVar(NodeId(19), Symbol(47)), Value(NodeId(20), Number(BigInt { sign: Plus, data: BigUint { data: [5] } }))])]).
+
+    ┌── tests/sources/functional/const_subexp_spec_check.move:18:9 ───
+    │
+ 18 │         requires true ==> x < 5;
+    │         ^^^^^^^^^^^^^^^^^^^^^^^^
+    │
+
+error: subexpression is constant: Call(NodeId(79), Not, [Call(NodeId(29), And, [Call(NodeId(25), Lt, [LocalVar(NodeId(23), Symbol(47)), Value(NodeId(24), Number(BigInt { sign: Plus, data: BigUint { data: [5] } }))]), Call(NodeId(28), Gt, [LocalVar(NodeId(26), Symbol(47)), Value(NodeId(27), Number(BigInt { sign: Plus, data: BigUint { data: [5] } }))])])]).
+
+    ┌── tests/sources/functional/const_subexp_spec_check.move:26:9 ───
+    │
+ 26 │         ensures (x < 5 && x > 5) ==> x < 5;
+    │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    │
+
+error: subexpression is constant: Call(NodeId(87), Not, [Call(NodeId(52), Lt, [Call(NodeId(50), Result(0), []), Value(NodeId(51), Number(BigInt { sign: NoSign, data: BigUint { data: [] } }))])]).
+
+    ┌── tests/sources/functional/const_subexp_spec_check.move:37:9 ───
+    │
+ 37 │         ensures x < 3 ==> result < 0;
+    │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    │
+
+error: subexpression is constant: Call(NodeId(90), Not, [Call(NodeId(62), Neq, [LocalVar(NodeId(60), Symbol(47)), Value(NodeId(61), Number(BigInt { sign: Plus, data: BigUint { data: [4] } }))])]).
+
+    ┌── tests/sources/functional/const_subexp_spec_check.move:48:9 ───
+    │
+ 48 │         requires x != 4;    // assume false
     │         ^^^^^^^^^^^^^^^^
     │
 
-error: subexpression is constant: Call(NodeId(24), Not, [Call(NodeId(18), Neq, [LocalVar(NodeId(16), Symbol(47)), Value(NodeId(17), Number(BigInt { sign: Plus, data: BigUint { data: [4] } }))])]).
+error: subexpression is constant: Call(NodeId(65), Eq, [LocalVar(NodeId(63), Symbol(47)), Value(NodeId(64), Number(BigInt { sign: Plus, data: BigUint { data: [4] } }))]).
 
-    ┌── tests/sources/functional/const_subexp_spec_check.move:40:9 ───
+    ┌── tests/sources/functional/const_subexp_spec_check.move:49:9 ───
     │
- 40 │         requires x != 4;    // assume false
+ 49 │         requires x == 4;    // asserts true
     │         ^^^^^^^^^^^^^^^^
     │
 
-error: subexpression is constant: Call(NodeId(21), Eq, [LocalVar(NodeId(19), Symbol(47)), Value(NodeId(20), Number(BigInt { sign: Plus, data: BigUint { data: [4] } }))]).
+error: subexpression is constant: Call(NodeId(91), Not, [Call(NodeId(65), Eq, [LocalVar(NodeId(63), Symbol(47)), Value(NodeId(64), Number(BigInt { sign: Plus, data: BigUint { data: [4] } }))])]).
 
-    ┌── tests/sources/functional/const_subexp_spec_check.move:41:9 ───
+    ┌── tests/sources/functional/const_subexp_spec_check.move:49:9 ───
     │
- 41 │         requires x == 4;    // asserts true
-    │         ^^^^^^^^^^^^^^^^
-    │
-
-error: subexpression is constant: Call(NodeId(25), Not, [Call(NodeId(21), Eq, [LocalVar(NodeId(19), Symbol(47)), Value(NodeId(20), Number(BigInt { sign: Plus, data: BigUint { data: [4] } }))])]).
-
-    ┌── tests/sources/functional/const_subexp_spec_check.move:41:9 ───
-    │
- 41 │         requires x == 4;    // asserts true
+ 49 │         requires x == 4;    // asserts true
     │         ^^^^^^^^^^^^^^^^
     │

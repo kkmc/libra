@@ -378,7 +378,7 @@ impl TestInstrumenter {
                     );
 
                 let cond = self.make_condition(
-                    loc.clone(),
+                    annotation_loc.clone(),
                     kind.clone(),
                     exp.clone(),
                 );
@@ -658,27 +658,49 @@ impl TestInstrumenter {
                 Type::Struct(mid, sid, _) => {
                     let mod_env = module_env.env.get_module(mid);
                     let struct_env = mod_env.get_struct(sid);
-                    for field_index in 0..struct_env.get_field_count() {
-                        let field_symbol = self.get_field_symbol(module_env, mid, sid, field_index);
+                    if struct_env.get_field_count() > 1 {
+                        for field_index in 1..struct_env.get_field_count() {
+                            let field_symbol = self.get_field_symbol(module_env, mid, sid, field_index);
+                            let mut rw_code = single_ret_code.clone();
+
+                            // tmp_index <- BorrowLoc(return_i)
+                            self.add_borrow(&mut rw_code, tmp_index, ret_tmp_indices[i], typ);
+                            // tmp_index <- BorrowField(tmp_index, field)
+                            rw_code.push(self.make_borrow_field(tmp_index, tmp_index, mod_env.get_id(), struct_env.get_id(), field_index));
+                            // tmp_index <- WriteRef(tmp_index, uncon_index)
+                            rw_code.push(self.make_writeref(tmp_index, uncon_index));
+                            // return_i <- WritebackToValue(tmp_index)
+                            self.add_writeback(&mut rw_code, ret_tmp_indices[i], tmp_index, typ);
+
+                            // return
+                            rw_code.push(Bytecode::Ret(AttrId::new(0), ret_tmp_indices.clone()));
+
+                            let error_annotation = format!("{} {} $ret_{} {}",
+                                module_name,
+                                func_env.get_name().display(func_env.symbol_pool()),
+                                i,
+                                field_symbol.display(struct_env.symbol_pool()),
+                            );
+
+                            self.add_underspec_spec_check(func_env, error_annotation, &preconds, &postconds, rw_code, data);
+                        }
+                    } else {
                         let mut rw_code = single_ret_code.clone();
 
                         // tmp_index <- BorrowLoc(return_i)
-                        self.add_borrow(&mut rw_code, tmp_index, ret_tmp_indices[i], typ);
-                        // tmp_index <- BorrowField(tmp_index, field)
-                        rw_code.push(self.make_borrow_field(tmp_index, tmp_index, mod_env.get_id(), struct_env.get_id(), field_index));
+                        self.add_borrow(&mut rw_code, tmp_index, ret_tmp_indices[i], &typ);
                         // tmp_index <- WriteRef(tmp_index, uncon_index)
                         rw_code.push(self.make_writeref(tmp_index, uncon_index));
                         // return_i <- WritebackToValue(tmp_index)
-                        self.add_writeback(&mut rw_code, ret_tmp_indices[i], tmp_index, typ);
+                        self.add_writeback(&mut rw_code, ret_tmp_indices[i], tmp_index, &typ);
 
                         // return
                         rw_code.push(Bytecode::Ret(AttrId::new(0), ret_tmp_indices.clone()));
 
-                        let error_annotation = format!("{} {} $ret_{} {}",
+                        let error_annotation = format!("{} {} $ret_{}",
                             module_name,
                             func_env.get_name().display(func_env.symbol_pool()),
                             i,
-                            field_symbol.display(struct_env.symbol_pool()),
                         );
 
                         self.add_underspec_spec_check(func_env, error_annotation, &preconds, &postconds, rw_code, data);

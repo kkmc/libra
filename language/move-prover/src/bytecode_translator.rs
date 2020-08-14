@@ -547,7 +547,7 @@ impl<'env> ModuleTranslator<'env> {
 
         // If the function has been annotated with rewritten specifications
         // (or code), then generate the corresponding specification check functions
-        if func_target.data.rewritten_spec.len() > 0 {
+        if !func_target.data.rewritten_spec.is_empty() {
             // generate the _smoke_test version of the function which creates a new procedure
             // for the `Ensures` condition so that ALL the errors will be reported
             for spec_check in &func_target.data.rewritten_spec {
@@ -564,8 +564,9 @@ impl<'env> ModuleTranslator<'env> {
                 self.generate_spec_check_function_sig(func_target, spec_check);
                 self.generate_function_spec_check_body(func_target, spec_check);
             }
+        }
 
-            // Do not do any verification in specification check mode
+        if func_target.is_pragma_spec_check() {
             return;
         }
 
@@ -832,12 +833,12 @@ impl<'env> ModuleTranslator<'env> {
             ConditionKind::RequiresSpecCheckAssert | ConditionKind::Ensures => true,
             _ => false,
         });
-        let spec_check = spec_check_opt
+        let spec_check_assert = spec_check_opt
             .expect("There should be at least one assertion for the specification check.");
 
         let spec_translator = self.new_spec_translator(func_target.clone(), false);
 
-        spec_translator.ensure_postcondition(spec_check);
+        spec_translator.ensure_postcondition(spec_check_assert);
 
         emitln!(self.writer, "{");
         self.writer.indent();
@@ -849,9 +850,20 @@ impl<'env> ModuleTranslator<'env> {
         emitln!(self.writer, "call $InitVerification();");
 
         // (b) assume implicit preconditions.
-        spec_translator.assume_preconditions();
+        let preconds = &spec_check
+            .spec
+            .conditions
+            .iter()
+            .filter(|cond| match cond.kind {
+                ConditionKind::Requires |
+                ConditionKind::RequiresModule |
+                ConditionKind::RequiresSpecCheck => true,
+                _ => false,
+            })
+            .collect::<Vec<_>>();
+        spec_translator.assume_conds(preconds);
 
-        if spec_check.kind != ConditionKind::RequiresSpecCheckAssert {
+        if spec_check_assert.kind != ConditionKind::RequiresSpecCheckAssert {
             // (c) assume reference parameters to be based on the Param(i) Location, ensuring
             // they are disjoint from all other references. This prevents aliasing and is justified as
             // follows:

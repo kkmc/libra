@@ -37,6 +37,25 @@ module TestMutatedArgSpecCheck {
         // ensures t.y == old(t.y);
     }
 
+    resource struct E {
+    }
+
+    /// Missing struct return value spec
+    public fun return_E(): (E, E) {
+        (E {}, E {})
+    }
+    spec fun return_E {
+        //ensures result == E {};
+    }
+
+    /// Should verify without warnings
+    public fun return_0(): u64 {
+        0
+    }
+    spec fun return_0 {
+        ensures result == 0;
+    }
+
     public fun multi_returns(cond: bool, t: &mut T): (u64, u64) {
         let a = 1;
         let b = 2;

@@ -978,22 +978,9 @@ impl<'env> SpecTranslator<'env> {
             .set_condition_info(loc.clone(), tag, ConditionInfo::for_message(message));
     }
 
-    /// Assumes preconditions for function. This is used for the top-level verification
-    /// entry point of a function.
-    pub fn assume_preconditions(&self) {
-        let func_target = self.function_target();
-        // Assume requires.
-        let requires = func_target
-            .get_spec()
-            .filter(|c| match c.kind {
-                ConditionKind::Requires
-                | ConditionKind::RequiresModule
-                | ConditionKind::RequiresSpecCheck => true,
-                _ => false,
-            })
-            .collect_vec();
-        if !requires.is_empty() {
-            self.translate_seq(requires.iter(), "\n", |cond| {
+    pub fn assume_conds(&self, conds: &Vec<&Condition>) {
+        if !conds.is_empty() {
+            self.translate_seq(conds.iter(), "\n", |cond| {
                 self.writer.set_location(&cond.loc);
                 emit!(self.writer, "assume b#$Boolean(");
                 self.translate_exp(&cond.exp);
@@ -1002,14 +989,6 @@ impl<'env> SpecTranslator<'env> {
             emitln!(self.writer);
         }
     }
-
-  //pub fn assume_cond(&self, cond: &Condition) {
-  //    self.writer.set_location(&cond.loc);
-  //    emit!(self.writer, "assume b#$Boolean(");
-  //    self.translate_exp(&cond.exp);
-  //    emit!(self.writer, ");");
-  //    emitln!(self.writer);
-  //}
 
     /// Assert the given postcondition. This is used for the top-level
     /// `_smoke_test` function.
